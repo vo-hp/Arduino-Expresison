@@ -38,6 +38,98 @@ void nhapBieuThuc() {
   }
 }
 
+void readBieuThuc3sh() {
+  sohang1 = bieu_thuc.substring(0, viTriKt1);
+  sohang2 = bieu_thuc.substring(viTriKt1 + 1, viTriKt2);
+  sohang3 = bieu_thuc.substring(viTriKt2 + 1, bieu_thuc.length());
+  Serial.println(sohang1.toFloat());
+  Serial.println(sohang2.toFloat());
+  Serial.println(sohang3.toFloat());
+}
+
+void readBieuThuc2sh() {
+  sohang1 = bieu_thuc.substring(0, viTriKt1);
+  sohang2 = bieu_thuc.substring(viTriKt1 + 1, bieu_thuc.length());
+  Serial.println(sohang1.toFloat());
+  Serial.println(sohang2.toFloat());
+}
+
+void analyzeExpression() {
+  if (Serial.available() > 0) {
+    clearLCD();
+    bieu_thuc = Serial.readString();
+    bieu_thuc.trim();
+    Serial.println(bieu_thuc);
+    lcd.setCursor(0, 0);
+    lcd.print(bieu_thuc);
+    checkOperator();
+    doExpression1operator();
+    doExpression2operator();
+    delay(1000);
+    clearLCD();
+  }
+}
+
+void checkOperator() {
+  for (int i = 0; i < bieu_thuc.length(); i++) {
+    kt = bieu_thuc.charAt(i);
+    if (kt == '+' || kt == '-' || kt == '*' || kt == '/') {
+      Serial.println("vi tri tim thay dau " + String(i));
+      countkt++;
+      if (countkt == 1) {
+        viTriKt1 = i;
+        Serial.println(viTriKt1);
+        kt1 = char(bieu_thuc.charAt(i));
+        Serial.println(String("ki tu 1 la: ") + char(kt1));
+        isThere1operator = true;
+      }
+      if (countkt == 2) {
+        viTriKt2 = i;
+        Serial.println(viTriKt2);
+        kt2 = char(bieu_thuc.charAt(i));
+        Serial.println(String("ki tu 2 la: ") + char(kt2));
+        areThere2operator = true;
+        isThere1operator = false;
+      }
+    }
+    if (i == (bieu_thuc.length() - 1)) {
+      countkt = 0;
+    }
+  }
+}
+
+void doExpression1operator() {
+  if (isThere1operator) {
+    readBieuThuc2sh();
+    lcd.setCursor(0, 0);
+    lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt()
+    xetTruongHop1KiTu();
+    isThere1operator = false;
+  }
+}
+
+void doExpression2operator() {
+  if (areThere2operator) {
+    readBieuThuc3sh();
+    lcd.setCursor(0, 0);
+    lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt() + char(kt2) + sohang3.toInt();
+    xetTruongHop2KiTu();
+    areThere2operator = false;
+  }
+}
+
+void printResult() {
+  Serial.print("= ");
+  Serial.println(result);
+  dapan.concat(result);
+  lcd.setCursor((16 - dapan.length()), 1);
+  lcd.print(result);
+}
+
+void clearLCD() {
+  lcd.setCursor(0, 0);
+  lcd.print("                ");
+}
 
 float phep_cong(String sohang1, String sohang2) {
   return sohang1.toFloat() + sohang2.toFloat();
@@ -48,7 +140,7 @@ float phep_tru(String sohang1, String sohang2) {
 }
 
 float phep_nhan(String sohang1, String sohang2) {
-  return  sohang1.toFloat() * sohang2.toFloat();
+  return sohang1.toFloat() * sohang2.toFloat();
 }
 
 float phep_chia(String sohang1, String sohang2) {
@@ -68,16 +160,17 @@ void xetTruongHop1KiTu() {
   if (kt1 == '/') {
     result = sohang1.toFloat() / sohang2.toFloat();
   }
+  printResult();
 }
 
 void truongHop2KiTuCungDau() {
   if (kt1 == '+' && kt2 == '+') {
     result = sohang1.toFloat() + sohang2.toFloat() + sohang3.toFloat();
   }
-  if ( kt1 == '-' && kt2 == '-') {
+  if (kt1 == '-' && kt2 == '-') {
     result = sohang1.toFloat() - sohang2.toFloat() - sohang3.toFloat();
   }
-  if ( kt1 == '*' && kt2 == '*') {
+  if (kt1 == '*' && kt2 == '*') {
     result = sohang1.toFloat() * sohang2.toFloat() * sohang2.toFloat();
   }
   if (kt1 == '/' && kt2 == '/') {
@@ -87,59 +180,49 @@ void truongHop2KiTuCungDau() {
 
 void xetTruongHop2KiTu() {
   truongHop2KiTuCungDau();
-  if ( kt1 == '+' && kt2 == '*' || kt1 == '*' and kt2 == '+') {
+  if (kt1 == '+' && kt2 == '*' || kt1 == '*' and kt2 == '+') {
     if (kt1 == '+' && kt2 == '*') {
       result = sohang1.toFloat() + phep_nhan(sohang2, sohang3);
-    }
-    else {
+    } else {
       result = phep_nhan(sohang1, sohang2) + sohang3.toFloat();
-    } 
-  }   
-  if ( kt1 == '+' && kt2 == '-' || kt1 == '-' and kt2 == '+') {
+    }
+  }
+  if (kt1 == '+' && kt2 == '-' || kt1 == '-' and kt2 == '+') {
     if (kt1 == '+' && kt2 == '-') {
       result = sohang1.toFloat() + phep_tru(sohang2, sohang3);
-    }
-    else {
+    } else {
       result = phep_tru(sohang1, sohang2) + sohang3.toFloat();
-    }  
-  }  
-  if ( kt1 == '+' && kt2 == '/' || kt1 == '/' and kt2 == '+') {
+    }
+  }
+  if (kt1 == '+' && kt2 == '/' || kt1 == '/' and kt2 == '+') {
     if (kt1 == '+' && kt2 == '/') {
       result = sohang1.toFloat() + phep_chia(sohang2, sohang3);
-    }
-    else {
+    } else {
       result = phep_chia(sohang1, sohang2) + sohang3.toFloat();
-    }  
+    }
   }
-  if ( kt1 == '-' && kt2 == '*' || kt1 == '*' and kt2 == '-') {
+  if (kt1 == '-' && kt2 == '*' || kt1 == '*' and kt2 == '-') {
     if (kt1 == '-' && kt2 == '*') {
       result = sohang1.toFloat() - phep_nhan(sohang2, sohang3);
-    }
-    else {
+    } else {
       result = phep_nhan(sohang1, sohang2) - sohang3.toFloat();
     }
-  }  
-  if ( kt1 == '-' && kt2 == '/' || kt1 == '/' and kt2 == '-') {
+  }
+  if (kt1 == '-' && kt2 == '/' || kt1 == '/' and kt2 == '-') {
     if (kt1 == '-' && kt2 == '/') {
       result = sohang1.toFloat() - phep_chia(sohang2, sohang3);
-    }
-    else {
+    } else {
       result = phep_chia(sohang1, sohang2) - sohang3.toFloat();
     }
-  }  
-  if ( kt1 == '/' && kt2 == '*' || kt1 == '*' and kt2 == '/') {
+  }
+  if (kt1 == '/' && kt2 == '*' || kt1 == '*' and kt2 == '/') {
     if (kt1 == '/' && kt2 == '*') {
       result = sohang1.toFloat() / sohang2.toFloat() * sohang3.toFloat();
-    }
-    else {
+    } else {
       result = phep_nhan(sohang1, sohang2) / sohang3.toFloat();
-    }            
+    }
   }
-  Serial.print("= ");
-  Serial.println(result);
-  dapan.concat(result);
-  lcd.setCursor((16 - dapan.length()), 1);
-  lcd.print(result);
+  printResult();
 }
 
 
@@ -151,63 +234,5 @@ void setup() {
 
 void loop() {
   nhapBieuThuc();
-  if (Serial.available() > 0) {
-    lcd.setCursor(0, 0);
-    lcd.print("                ");
-    bieu_thuc = Serial.readString();
-    bieu_thuc.trim();
-    Serial.println(bieu_thuc);
-    lcd.setCursor(0, 0);
-    lcd.print(bieu_thuc);
-    for (int i = 0; i < bieu_thuc.length(); i++) {
-      kt = bieu_thuc.charAt(i);
-      if (kt == '+' || kt == '-' || kt == '*' || kt == '/') {
-        Serial.println("vi tri tim thay dau " + String(i));
-        countkt++;
-        if (countkt == 1) {
-          viTriKt1 = i;
-          Serial.println(viTriKt1);
-          kt1 = char(bieu_thuc.charAt(i));
-          Serial.println(String("ki tu 1 la: ") + char(kt1));
-          isThere1operator = true;
-        }
-        if (countkt == 2) {
-          viTriKt2 = i;
-          Serial.println(viTriKt2);
-          kt2 = char(bieu_thuc.charAt(i));
-          Serial.println(String("ki tu 2 la: ") + char(kt2));
-          areThere2operator = true;
-          isThere1operator = false;
-        }
-      }
-      if (i == (bieu_thuc.length() - 1)) {
-        countkt = 0;
-      }
-    }
-    if (isThere1operator) {
-      sohang1 = bieu_thuc.substring(0, viTriKt1);
-      sohang2 = bieu_thuc.substring(viTriKt1 + 1, bieu_thuc.length());
-      Serial.println(sohang1.toFloat());
-      Serial.println(sohang2.toFloat());
-      lcd.setCursor(0, 0);
-      lcd.print(bieu_thuc); // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt()
-      xetTruongHop1KiTu();
-      isThere1operator = false;
-    }
-    if (areThere2operator) {
-      sohang1 = bieu_thuc.substring(0, viTriKt1);
-      sohang2 = bieu_thuc.substring(viTriKt1 + 1, viTriKt2);
-      sohang3 = bieu_thuc.substring(viTriKt2 + 1, bieu_thuc.length());
-      Serial.println(sohang1.toFloat());
-      Serial.println(sohang2.toFloat());
-      Serial.println(sohang3.toFloat());
-      lcd.setCursor(0, 0);
-      lcd.print(bieu_thuc); // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt() + char(kt2) + sohang3.toInt();
-      xetTruongHop2KiTu();
-      areThere2operator = false;
-    }
-    delay(5000);
-    lcd.setCursor(0, 0);
-    lcd.print("                ");  
-  }
+  analyzeExpression();
 }
