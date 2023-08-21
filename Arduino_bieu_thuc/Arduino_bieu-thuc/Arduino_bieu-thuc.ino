@@ -76,16 +76,15 @@ void checkOperator() {
     if (kt == '+' || kt == '-' || kt == '*' || kt == '/') {
       Serial.println("vi tri tim thay dau " + String(i));
       countkt++;
+      Serial.println("so ki tu = " + String(countkt));
       if (countkt == 1) {
         viTriKt1 = i;
-        Serial.println(viTriKt1);
         kt1 = char(bieu_thuc.charAt(i));
         Serial.println(String("ki tu 1 la: ") + char(kt1));
         isThere1operator = true;
       }
       if (countkt == 2) {
         viTriKt2 = i;
-        Serial.println(viTriKt2);
         kt2 = char(bieu_thuc.charAt(i));
         Serial.println(String("ki tu 2 la: ") + char(kt2));
         areThere2operator = true;
