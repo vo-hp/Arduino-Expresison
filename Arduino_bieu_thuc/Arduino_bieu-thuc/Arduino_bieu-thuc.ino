@@ -54,6 +54,13 @@ void readBieuThuc2sh() {
   Serial.println(sohang2.toFloat());
 }
 
+// void nhapLaiBieuThuc() {
+//   if ( isDigit(sohang1.trim()) || isDigit(sohang2.trim()) || isDigit(sohang3.trim()) ) {
+//     clearLCD();
+//     lcd.setCursor
+//   }
+// }
+
 void analyzeExpression() {
   if (Serial.available() > 0) {
     clearLCD();
@@ -65,8 +72,6 @@ void analyzeExpression() {
     checkOperator();
     doExpression1operator();
     doExpression2operator();
-    delay(1000);
-    clearLCD();
   }
 }
 
@@ -234,4 +239,6 @@ void setup() {
 void loop() {
   nhapBieuThuc();
   analyzeExpression();
+  delay(1000);
+  clearLCD();
 }
