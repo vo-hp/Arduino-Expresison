@@ -9,6 +9,7 @@ String sohang3 = "";
 String dapan = "";
 String bieu_thuc = "";
 String nhap = "nhap bieu thuc: ";
+String nhaplai = "nhap lai: ";
 
 int viTriKt1;
 int viTriKt2;
@@ -16,16 +17,35 @@ int kt1;
 int kt2;
 int countkt;
 char kt;
-char space;
+char;
 float result;
 bool areThere2operator = false;
 bool isThere1operator = false;
+bool wasNotExpression = false;
 
+bool containOnlyDigits(const String& str) {
+  for (int c = 0; c < str.length(); c++) {
+    char d = str[c];
+    if (!isdigit(d)) {
+      if (d == '.') {
+      } else {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 void nhapBieuThuc() {
-  Serial.println(nhap);
-  lcd.setCursor(0, 0);
-  lcd.print(nhap);
+  if (not wasNotExpression) {
+    Serial.println(nhap);
+    lcd.setCursor(0, 0);
+    lcd.print(nhap);
+  } else {
+    Serial.println(nhaplai);
+    lcd.setCursor(0, 0);
+    lcd.print(nhaplai);
+  }
   while (Serial.available() == 0) {
     countkt = 0;
     result = 0;
@@ -42,24 +62,32 @@ void readBieuThuc3sh() {
   sohang1 = bieu_thuc.substring(0, viTriKt1);
   sohang2 = bieu_thuc.substring(viTriKt1 + 1, viTriKt2);
   sohang3 = bieu_thuc.substring(viTriKt2 + 1, bieu_thuc.length());
-  Serial.println(sohang1.toFloat());
-  Serial.println(sohang2.toFloat());
-  Serial.println(sohang3.toFloat());
+  sohang1.trim();
+  sohang2.trim();
+  sohang3.trim();
+  if (containOnlyDigits(sohang1) && containOnlyDigits(sohang2) && containOnlyDigits(sohang3)) {
+    wasNotExpression = false;
+    Serial.println(sohang1.toFloat());
+    Serial.println(sohang2.toFloat());
+    Serial.println(sohang3.toFloat());
+  } else {
+    wasNotExpression = true;
+  }
 }
 
 void readBieuThuc2sh() {
   sohang1 = bieu_thuc.substring(0, viTriKt1);
   sohang2 = bieu_thuc.substring(viTriKt1 + 1, bieu_thuc.length());
-  Serial.println(sohang1.toFloat());
-  Serial.println(sohang2.toFloat());
+  sohang1.trim();
+  sohang2.trim();
+  if (containOnlyDigits(sohang1) && containOnlyDigits(sohang2)) {
+    wasNotExpression = false;
+    Serial.println(sohang1.toFloat());
+    Serial.println(sohang2.toFloat());
+  } else {
+    wasNotExpression = true;
+  }
 }
-
-// void nhapLaiBieuThuc() {
-//   if ( isDigit(sohang1.trim()) || isDigit(sohang2.trim()) || isDigit(sohang3.trim()) ) {
-//     clearLCD();
-//     lcd.setCursor
-//   }
-// }
 
 void analyzeExpression() {
   if (Serial.available() > 0) {
@@ -105,20 +133,27 @@ void checkOperator() {
 void doExpression1operator() {
   if (isThere1operator) {
     readBieuThuc2sh();
-    lcd.setCursor(0, 0);
-    lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt()
-    xetTruongHop1KiTu();
-    isThere1operator = false;
+    if (not wasNotExpression) {
+      lcd.setCursor(0, 0);
+      lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt()
+      xetTruongHop1KiTu();
+      isThere1operator = false;
+    } 
+    else {
+    }
   }
 }
 
 void doExpression2operator() {
   if (areThere2operator) {
     readBieuThuc3sh();
-    lcd.setCursor(0, 0);
-    lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt() + char(kt2) + sohang3.toInt();
-    xetTruongHop2KiTu();
-    areThere2operator = false;
+    if (not wasNotExpression) {
+      lcd.setCursor(0, 0);
+      lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt() + char(kt2) + sohang3.toInt();
+      xetTruongHop2KiTu();
+      areThere2operator = false;
+    } else {
+    }
   }
 }
 
