@@ -1,3 +1,7 @@
+// SDA A4
+// SCL A5
+
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
