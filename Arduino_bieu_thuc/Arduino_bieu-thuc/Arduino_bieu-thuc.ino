@@ -1,6 +1,6 @@
 // SDA A4
 // SCL A5
-
+// For 3 numbers and (1/2) operators only
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -12,7 +12,7 @@ String sohang2 = "";
 String sohang3 = "";
 String dapan = "";
 String bieu_thuc = "";
-String nhap = "nhap bieu thuc: ";
+String nhap = "nhap bieu thuc:";
 String nhaplai = "nhap lai: ";
 
 int viTriKt1;
@@ -23,9 +23,11 @@ int countkt;
 char kt;
 char;
 float result;
+float ans;
 bool areThere2operator = false;
 bool isThere1operator = false;
 bool wasNotExpression = false;
+bool wasDeleted = false;
 
 bool containOnlyDigits(const String& str) {
   for (int c = 0; c < str.length(); c++) {
@@ -40,15 +42,30 @@ bool containOnlyDigits(const String& str) {
   return true;
 }
 
+bool containOnlyAlpha(const String& str) {
+  for (int e = 0; e < str.length(); e++) {
+    char k = str[e];
+    if (!isAlpha(k)) {
+    }
+    else {
+      return false;
+    }
+  }
+  return true;
+}
+
 void nhapBieuThuc() {
-  if (not wasNotExpression) {
-    Serial.println(nhap);
-    lcd.setCursor(0, 0);
-    lcd.print(nhap);
-  } else {
-    Serial.println(nhaplai);
-    lcd.setCursor(0, 0);
-    lcd.print(nhaplai);
+  if (wasDeleted) {
+    if (not wasNotExpression) {
+      Serial.println(nhap);
+      lcd.setCursor(0, 0);
+      lcd.print(nhap);
+    } else {
+      Serial.println(nhaplai);
+      lcd.setCursor(0, 0);
+      lcd.print(nhaplai);
+    }
+    wasDeleted = false;
   }
   while (Serial.available() == 0) {
     countkt = 0;
@@ -57,8 +74,8 @@ void nhapBieuThuc() {
     bieu_thuc = "";
     sohang1 = "";
     sohang2 = "";
-    lcd.setCursor(0, 1);
-    lcd.print("                ");
+    // lcd.setCursor(0, 1);
+    // lcd.print("                ");
   }
 }
 
@@ -95,12 +112,16 @@ void readBieuThuc2sh() {
 
 void analyzeExpression() {
   if (Serial.available() > 0) {
-    clearLCD();
+    clearLCD1();
     bieu_thuc = Serial.readString();
     bieu_thuc.trim();
     Serial.println(bieu_thuc);
     lcd.setCursor(0, 0);
     lcd.print(bieu_thuc);
+    if (containOnlyAlpha(bieu_thuc)) {
+      wasNotExpression = true;
+      wasDeleted = true;
+    }
     checkOperator();
     doExpression1operator();
     doExpression2operator();
@@ -142,8 +163,7 @@ void doExpression1operator() {
       lcd.print(bieu_thuc);  // sohang1.toInt() + String(" ") + char(kt1) + String(" ") + sohang2.toInt()
       xetTruongHop1KiTu();
       isThere1operator = false;
-    } 
-    else {
+    } else {
     }
   }
 }
@@ -167,11 +187,19 @@ void printResult() {
   dapan.concat(result);
   lcd.setCursor((16 - dapan.length()), 1);
   lcd.print(result);
+  ans = result;
 }
 
-void clearLCD() {
+void clearLCD1() {
   lcd.setCursor(0, 0);
   lcd.print("                ");
+}
+
+void clearLCD2() {
+  {
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+  }
 }
 
 float phep_cong(String sohang1, String sohang2) {
@@ -273,11 +301,32 @@ void setup() {
   Serial.begin(115200);
   lcd.init();
   lcd.backlight();
+  Serial.println(nhap);
+  lcd.setCursor(0, 0);
+  lcd.print(nhap);
 }
 
 void loop() {
   nhapBieuThuc();
   analyzeExpression();
-  delay(1000);
-  clearLCD();
+  if (not wasNotExpression) {
+    if (bieu_thuc == "AC") {
+      clearLCD1();
+      clearLCD2();
+      Serial.println("da xoa ");
+      wasDeleted = true;
+    }
+    if (bieu_thuc == "ans") {
+      clearLCD1();
+      clearLCD2();
+      Serial.println(ans);
+      lcd.setCursor(0, 0);
+      lcd.print("answer ");
+      lcd.setCursor(16 - (String(ans).length()), 1);
+      lcd.print(ans);
+    } 
+  }
+  if (wasNotExpression) {
+    wasDeleted = true;
+  }
 }
