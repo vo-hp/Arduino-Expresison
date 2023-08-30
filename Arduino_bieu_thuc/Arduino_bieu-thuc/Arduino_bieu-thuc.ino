@@ -74,8 +74,6 @@ void nhapBieuThuc() {
     bieu_thuc = "";
     sohang1 = "";
     sohang2 = "";
-    // lcd.setCursor(0, 1);
-    // lcd.print("                ");
   }
 }
 
@@ -310,6 +308,7 @@ void loop() {
   nhapBieuThuc();
   analyzeExpression();
   if (not wasNotExpression) {
+    wasDeleted = false;
     if (bieu_thuc == "AC") {
       clearLCD1();
       clearLCD2();
@@ -324,7 +323,7 @@ void loop() {
       lcd.print("answer ");
       lcd.setCursor(16 - (String(ans).length()), 1);
       lcd.print(ans);
-    } 
+    }
   }
   if (wasNotExpression) {
     wasDeleted = true;
